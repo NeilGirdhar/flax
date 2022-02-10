@@ -34,18 +34,21 @@ import functools
 import re
 import threading
 from typing import Any, Callable, Mapping, Optional, Sequence, Tuple
+
+import jax
+from jax.experimental import pjit
+
 import flax
 from flax import linen as nn
 from flax.core.frozen_dict import freeze
 from flax.core.frozen_dict import unfreeze
-from flax.core.lift import In as ScanIn  # pylint: disable=unused-import
-from flax.core.lift import Out as ScanOut  # pylint: disable=unused-import
+from flax.core.lift import In as ScanIn
+from flax.core.lift import Out as ScanOut
 import flax.struct
 from flax.traverse_util import flatten_dict
 from flax.traverse_util import unflatten_dict
-import jax
-from jax.experimental import maps
-from jax.experimental import pjit
+
+__all__ = ['ScanIn', 'ScanOut']
 
 
 # Real types and dummy aliases for documentation

@@ -15,7 +15,6 @@
 """Initializers for Flax.
 """
 
-# pylint: disable=unused-import
 # re-export initializer functions from jax.nn
 from jax.nn.initializers import glorot_normal
 from jax.nn.initializers import glorot_uniform
@@ -34,4 +33,9 @@ from jax.nn.initializers import variance_scaling
 from jax.nn.initializers import xavier_normal
 from jax.nn.initializers import xavier_uniform
 from jax.nn.initializers import zeros
-# pylint: enable=unused-import
+
+__all__ = ['glorot_normal', 'glorot_uniform', 'he_normal', 'he_uniform',
+           'kaiming_normal', 'kaiming_uniform', 'lecun_normal', 'lecun_uniform',
+           'normal', 'ones', 'orthogonal', 'delta_orthogonal', 'uniform',
+           'variance_scaling', 'xavier_normal', 'xavier_uniform', 'zeros',
+           'zeros']

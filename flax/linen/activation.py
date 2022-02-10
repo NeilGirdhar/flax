@@ -14,8 +14,8 @@
 
 """Activation functions.
 """
+from typing import Any
 
-# pylint: disable=unused-import
 # re-export activation functions from jax.nn
 from jax.nn import celu
 from jax.nn import elu
@@ -37,14 +37,15 @@ from jax.nn import hard_tanh
 from jax.nn import relu6
 from jax.nn import hard_sigmoid
 from jax.nn import hard_swish
-
 from jax.numpy import tanh
-# pylint: enable=unused-import
-
-from typing import Any
+import jax.numpy as jnp
 
 from flax.linen.module import Module, compact
-import jax.numpy as jnp
+
+__all__ = ['celu', 'elu', 'gelu', 'glu', 'leaky_relu', 'log_sigmoid',
+           'log_softmax', 'normalize', 'relu', 'sigmoid', 'soft_sign',
+           'softmax', 'softplus', 'swish', 'silu', 'selu', 'hard_tanh', 'relu6',
+           'hard_sigmoid', 'hard_swish', 'tanh', 'PReLU']
 
 
 Array = Any
