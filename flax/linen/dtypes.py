@@ -31,27 +31,32 @@ Initializer = Callable[[PRNGKey, Shape, InexactDType], Array]
 
 
 def canonicalize_inexact_dtypes(
-    input_dtype: InexactDType,
-    param_dtype: Optional[InexactDType],
-    computation_dtype: Optional[InexactDType]) -> Tuple[InexactDType,
-                                                        InexactDType]:
-  returned_param_dtype = input_dtype if param_dtype is None else param_dtype
-  dtype = (jnp.result_type(input_dtype, returned_param_dtype)
+    computation_dtype: Optional[InexactDType],
+    *input_dtypes: Union[Array, InexactDType]) -> InexactDType:
+    """
+    Args:
+      computation_dtype: The dtype that the module will do computations in, or
+        None if it is to be inferred.
+      input_dtypes: The dtype of the module inputs and parameters from which the
+        computation_dtype will be inferred.
+    """
+  dtype = (jnp.result_type(*input_dtypes)
            if computation_dtype is None else computation_dtype)
-
-  assert jnp.issubdtype(input_dtype, jnp.inexact)
-  return returned_param_dtype, dtype
+  assert jnp.issubdtype(dtype, jnp.inexact)
+  return dtype
 
 
 def canonicalize_numeric_dtypes(
-    input_dtype: NumericDType,
-    param_dtype: Optional[NumericDType],
-    computation_dtype: Optional[NumericDType]) -> Tuple[NumericDType,
-                                                        NumericDType]:
-  returned_param_dtype = input_dtype if param_dtype is None else param_dtype
-  dtype = (jnp.result_type(input_dtype, returned_param_dtype)
+    computation_dtype: Optional[NumericDType],
+    *input_dtypes: Union[Array, NumericDType]) -> NumericDType:
+    """
+    Args:
+      computation_dtype: The dtype that the module will do computations in, or
+        None if it is to be inferred.
+      input_dtypes: The dtype of the module inputs and parameters from which the
+        computation_dtype will be inferred.
+    """
+  dtype = (jnp.result_type(*input_dtypes)
            if computation_dtype is None else computation_dtype)
-
-  assert jnp.issubdtype(input_dtype, jnp.number)
-  return returned_param_dtype, dtype
-
+  assert jnp.issubdtype(dtype, jnp.number)
+  return dtype

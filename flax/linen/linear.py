@@ -77,10 +77,6 @@ class DenseGeneral(Module):
     Returns:
       The transformed input.
     """
-    param_dtype, dtype = canonicalize_inexact_dtypes(inputs.dtype,
-                                                     self.param_dtype,
-                                                     self.dtype)
-    inputs = jnp.asarray(inputs, dtype)
     features = _canonicalize_tuple(self.features)
     axis = _canonicalize_tuple(self.axis)
     batch_dims = _canonicalize_tuple(self.batch_dims)
@@ -110,8 +106,15 @@ class DenseGeneral(Module):
         inputs.shape[ax] if ax in batch_dims else 1
         for ax in range(inputs.ndim) if ax not in axis)
     kernel_shape = tuple([inputs.shape[ax] for ax in axis]) + features
+
+    # Create parameters.
+    param_dtype = inputs.dtype if self.param_dtype is None else self.param_dtype
     kernel = self.param('kernel', kernel_init_wrap, batch_shape + kernel_shape,
                         param_dtype)
+
+    # Canonicalize types.
+    dtype = canonicalize_inexact_dtypes(self.dtype, inputs, kernel)
+    inputs = jnp.asarray(inputs, dtype)
     kernel = jnp.asarray(kernel, dtype)
 
     batch_ind = tuple(range(n_batch_dims))
@@ -169,15 +172,18 @@ class Dense(Module):
     Returns:
       The transformed input.
     """
-    param_dtype, dtype = canonicalize_inexact_dtypes(inputs.dtype,
-                                                     self.param_dtype,
-                                                     self.dtype)
-    inputs = jnp.asarray(inputs, dtype)
+    # Create parameters.
+    param_dtype = inputs.dtype if self.param_dtype is None else self.param_dtype
     kernel = self.param('kernel',
                         self.kernel_init,
                         (inputs.shape[-1], self.features),
                         param_dtype)
+
+    # Canonicalize types.
+    dtype = canonicalize_inexact_dtypes(self.dtype, inputs, kernel)
+    inputs = jnp.asarray(inputs, dtype)
     kernel = jnp.asarray(kernel, dtype)
+
     y = lax.dot_general(inputs, kernel,
                         (((inputs.ndim - 1,), (0,)), ((), ())),
                         precision=self.precision)

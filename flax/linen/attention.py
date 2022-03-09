@@ -257,10 +257,6 @@ class MultiHeadDotProductAttention(Module):
     Returns:
       output of shape `[batch_sizes..., length, features]`.
     """
-    param_dtype, dtype = canonicalize_inexact_dtypes(jnp.result_type(inputs_q,
-                                                                     inputs_kv),
-                                                     self.param_dtype,
-                                                     self.dtype)
     features = self.out_features or inputs_q.shape[-1]
     qkv_features = self.qkv_features or inputs_q.shape[-1]
     assert qkv_features % self.num_heads == 0, (
@@ -269,8 +265,8 @@ class MultiHeadDotProductAttention(Module):
 
     dense = partial(DenseGeneral,
                     axis=-1,
-                    dtype=dtype,
-                    param_dtype=param_dtype,
+                    dtype=self.dtype,
+                    param_dtype=self.param_dtype,
                     features=(self.num_heads, head_dim),
                     kernel_init=self.kernel_init,
                     bias_init=self.bias_init,
@@ -281,6 +277,12 @@ class MultiHeadDotProductAttention(Module):
     query, key, value = (dense(name='query')(inputs_q),
                          dense(name='key')(inputs_kv),
                          dense(name='value')(inputs_kv))
+
+    # Canonicalize types.
+    dtype = canonicalize_inexact_dtypes(self.dtype, query, key, value)
+    query = jnp.asarray(query, dtype)
+    key = jnp.asarray(key, dtype)
+    value = jnp.asarray(value, dtype)
 
     # During fast autoregressive decoding, we feed one position at a time,
     # and cache the keys and values step by step.
@@ -347,7 +349,7 @@ class MultiHeadDotProductAttention(Module):
                        bias_init=self.bias_init,
                        use_bias=self.use_bias,
                        dtype=dtype,
-                       param_dtype=param_dtype,
+                       param_dtype=self.param_dtype,
                        precision=self.precision,
                        name='out')(x)
     return out
