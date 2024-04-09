@@ -18,7 +18,7 @@ import dataclasses
 import enum
 import threading
 import typing as tp
-from abc import ABCMeta
+from abc import ABC
 from copy import deepcopy
 
 import jax
@@ -1110,24 +1110,11 @@ class ModuleState(reprlib.Representable):
     yield reprlib.Attr('trace_state', self._trace_state)
 
 
-class GraphNodeMeta(ABCMeta):
-  if not tp.TYPE_CHECKING:
+class GraphNode(reprlib.Representable, ABC):
 
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-      return _graph_node_meta_call(cls, *args, **kwargs)
-
-
-def _graph_node_meta_call(cls: tp.Type[G], *args, **kwargs) -> G:
-  node = cls.__new__(cls, *args, **kwargs)
-  vars(node)['_graph_node__state'] = ModuleState()
-  node.__init__(*args, **kwargs)
-
-  return node
-
-
-class GraphNode(reprlib.Representable, metaclass=GraphNodeMeta):
-  if tp.TYPE_CHECKING:
-    _graph_node__state: ModuleState
+  def __init__(self, **kwargs: tp.Any) -> None:
+    super().__init__(**kwargs)
+    self._graph_node__state = ModuleState()
 
   def __init_subclass__(cls) -> None:
     super().__init_subclass__()
@@ -1153,6 +1140,8 @@ class GraphNode(reprlib.Representable, metaclass=GraphNodeMeta):
     object.__setattr__(self, name, value)
 
   def check_valid_context(self, error_msg: str) -> None:
+    if not hasattr(self, '_graph_node__state'):
+      raise AttributeError(f'super().__init__ not called for {type(self)}')
     if not self._graph_node__state.trace_state.is_valid():
       raise errors.TraceContextError(error_msg)
 

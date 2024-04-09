@@ -27,7 +27,7 @@ from flax.experimental.nnx.nnx import (
   graph_utils,
 )
 from flax.experimental.nnx.nnx import variables as variableslib
-from flax.experimental.nnx.nnx.graph_utils import GraphDef, GraphNodeMeta
+from flax.experimental.nnx.nnx.graph_utils import GraphDef
 from flax.experimental.nnx.nnx.proxy_caller import (
   ApplyCaller,
   CallableProxy,
@@ -54,7 +54,7 @@ class _HasSetup(tp.Protocol):
     ...
 
 
-class ModuleMeta(GraphNodeMeta):
+class ModuleMeta:
   if not tp.TYPE_CHECKING:
 
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
@@ -62,7 +62,7 @@ class ModuleMeta(GraphNodeMeta):
 
 
 def _module_meta_call(cls: tp.Type[M], *args, **kwargs) -> M:
-  module: M = GraphNodeMeta.__call__(cls, *args, **kwargs)
+  module: M = cls.__new__(cls, *args, **kwargs)
 
   if dataclasses.is_dataclass(module):
     if isinstance(module, _HasSetup):
